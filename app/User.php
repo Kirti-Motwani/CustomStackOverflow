@@ -41,4 +41,64 @@ class User extends Authenticatable
     {
         return $this->hasMany(Question::class);
     }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
+    }
+
+    public function favourites()
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    /**
+     * Morphed Relations
+     * */
+    public function votesQuestions()
+    {
+        return $this->morphedByMany(Question::class,'vote')->withTimestamps();
+    }
+
+    public function votesAnswers()
+    {
+        return $this->morphedByMany(Answer::class,'vote')->withTimestamps();
+    }
+
+    public function getAvatarAttribute()
+    {
+        $size= 40;
+        $name = $this->name;
+        return "https://ui-avatars.com/api/?name={$name}&rounded=true&size={$size}";
+    }
+
+    public function hasQuestionUpVote(Question $question)
+    {
+        return $this->votesQuestions()->where(['vote'=>1,'vote_id'=>$question->id])->exists();
+    }
+
+    public function hasQuestionDownVote(Question $question)
+    {
+        return $this->votesQuestions()->where(['vote'=>-1,'vote_id'=>$question->id])->exists();
+    }
+
+    public function hasVoteForQuestion(Question $question)
+    {
+        return $this->hasQuestionUpVote($question) || $this->hasQuestionDownVote($question);
+    }
+
+    public function hasAnswerUpVote(Answer $answer)
+    {
+        return $this->votesAnswers()->where(['vote'=>1,'vote_id'=>$answer->id])->exists();
+    }
+
+    public function hasAnswerDownVote(Answer $answer)
+    {
+        return $this->votesAnswers()->where(['vote'=>-1,'vote_id'=>$answer->id])->exists();
+    }
+
+    public function hasVoteForAnswer(Answer $answer)
+    {
+        return $this->hasAnswerUpVote($answer) || $this->hasAnswerDownVote($answer);
+    }
 }

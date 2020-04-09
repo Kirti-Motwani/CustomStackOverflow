@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Questions\CreateQuestionRequest;
 use App\Question;
 use Illuminate\Http\Request;
 
 class QuestionsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth'])->only(['create','store']);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +30,7 @@ class QuestionsController extends Controller
      */
     public function create()
     {
-        //
+        return view('questions.create');
     }
 
     /**
@@ -34,9 +39,14 @@ class QuestionsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateQuestionRequest $request)
     {
-        //
+        auth()->user()->questions()->create([
+            'title'=>$request->title,
+            'body'=>$request->body,
+        ]);
+        session()->flash('success','Question has been added successfully!');
+        return redirect(route('questions.index'));
     }
 
     /**
@@ -47,7 +57,8 @@ class QuestionsController extends Controller
      */
     public function show(Question $question)
     {
-        //
+        $question->increment('views_count');
+        return view('questions.show',compact('question'));
     }
 
     /**
@@ -58,7 +69,7 @@ class QuestionsController extends Controller
      */
     public function edit(Question $question)
     {
-        //
+        return view('questions.edit',compact("question"));
     }
 
     /**
@@ -70,7 +81,12 @@ class QuestionsController extends Controller
      */
     public function update(Request $request, Question $question)
     {
-        //
+        $question->update([
+           'title'=>$request->title,
+           'body'=>$request->body
+        ]);
+        session()->flash('success','Question has been updated successfully!');
+        return redirect(route('questions.index'));
     }
 
     /**
@@ -81,6 +97,12 @@ class QuestionsController extends Controller
      */
     public function destroy(Question $question)
     {
-        //
+        if($this->authorize('delete',$question)){
+            $question->delete();
+            session()->flash('success','Question has been deleted successfully!');
+            return redirect(route('questions.index'));
+        }
+        abort(403,'Access Denied');
+
     }
 }

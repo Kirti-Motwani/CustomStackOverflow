@@ -3,6 +3,10 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
+
+                <div class="d-flex justify-content-end mb-3 mt-3">
+                    <a href="{{route('questions.create')}}" class="btn btn-outline-primary">Ask a Question</a>
+                </div>
                 <div class="card">
                     <div class="card-header">
                         All Questions
@@ -29,12 +33,34 @@
 
                                 </div>
                                 <div class="media-body">
-                                    <h4><a href="{{$question->url}}">{{$question->title}}</a></h4>
+
+                                    <div class="d-flex justify-content-between">
+
+
+                                        <h4><a href="{{$question->url}}">{{$question->title}}</a></h4>
+                                        <div class="d-flex flex-row">
+                                            @can('update',$question)
+                                            <a href="{{route('questions.edit',$question->id)}}" class="btn btn-sm btn-outline-info mr-3">Edit</a>
+                                            @endcan
+                                                @can('delete',$question)
+                                            <form action="{{route('questions.destroy',$question->id)}}" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        onclick="return confirm('Do you want to delete')"
+                                                        class="btn btn-sm mt-3 btn-outline-danger">
+
+                                                    Delete
+                                                </button>
+                                            </form>
+                                                @endcan
+                                        </div>
+                                    </div>
                                     <p>
                                         Asked by: <a href="#">{{$question->owner->name}}</a>
                                         <span class="text-muted">{{$question->created_date}}</span>
                                     </p>
-                                    <h4>{{Str::limit($question->body,250)}}</h4>
+                                    <h4>{!!  Str::limit($question->body,250)!!}</h4>
                                 </div>
                             </div>
                         </div>
